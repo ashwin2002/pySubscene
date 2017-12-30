@@ -1,13 +1,28 @@
+#!/usr/local/bin/python3.6
+
 import os, sys, glob
 from zipfile import ZipFile
 from math import ceil
 from bs4 import BeautifulSoup
-from urllib import request
-from urllib.request import urlopen
+if sys.version_info > (3, 0):
+    from urllib import request
+    from urllib.request import urlopen
+else:
+    from urllib3 import request
+    from urllib3.request import *
 
 def clearScreen ():
     os.system ('cls' if os.name == 'nt' else 'clear')
     return
+
+def getFileRating (ratingStr):
+    if ratingStr.find ('neutral-icon') >= 0:
+        rating = 'UR'
+    elif ratingStr.find ('positive-icon') >= 0:
+        rating = 'OK'
+    elif ratingStr.find ('bad-icon') >= 0:
+        rating = 'X'
+    return rating
 
 def getSubtitleList (titleDict):
     global url, header
@@ -34,7 +49,7 @@ def getSubtitleList (titleDict):
         subtitleDict[language][index] = dict ()
         subtitleDict[language][index]['title'] = title.strip()
         subtitleDict[language][index]['link'] = link.strip()
-        subtitleDict[language][index]['rating'] = rating
+        subtitleDict[language][index]['rating'] = ' '.join (rating)
 
     return subtitleDict
 
@@ -83,7 +98,8 @@ def displayAvailableFiles (subtitleDict, userLanguage):
         temIndex   = startIndex
 
         while temIndex <= endIndex and temIndex <= totalSubtitleCount:
-            print ('    [ %2s ] %s' % (temIndex, subtitleDict[userLanguage][str(temIndex)]['title']))
+            fileRating = getFileRating (subtitleDict[userLanguage][str(temIndex)]['rating'])
+            print ('    [ %2s ] [ %2s ] %s' % (temIndex, fileRating, subtitleDict[userLanguage][str(temIndex)]['title']))
             temIndex += 1
 
         userInput = input (promptStr).strip()
@@ -183,7 +199,11 @@ language  = 'english'
 serialNum = 1
 mainSearchOutput = '\n'
 
-searchStr = (input ('Enter search text: ')).strip()
+if sys.version_info > (3, 0):
+    searchStr = (input ('Enter search text: ')).strip()
+else:
+    searchStr = (raw_input ('Enter search text: ')).strip()
+
 if searchStr == '':
     print ('INFO: Nothing to search. Exiting ..')
     sys.exit (0)
