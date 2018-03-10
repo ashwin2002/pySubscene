@@ -13,4 +13,3 @@ Install dependent packages:
     
 Usage:
    python [script_file_name]
-
